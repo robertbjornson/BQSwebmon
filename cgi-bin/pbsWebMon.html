@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>pbswebmon %(CLUSTER_NAME)s</title> 
+    <script src="pbswebmon/table.js" type="text/javascript"></script>
+    <script src="pbswebmon/datasel.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+var iTimeout;
+
+/*=window.setTimeout('if (location.reload) location.reload();', %(REFRESH_TIME)s*1000);*/
+
+function set_refresh(refresh) {
+
+    if (refresh) {
+	if (window.setTimeout) {
+            iTimeout =
+		window.setTimeout('if (location.reload) location.reload();', %(REFRESH_TIME)s*1000);
+	}
+    } else {
+	if (window.clearTimeout) window.clearTimeout(iTimeout);
+    }
+}
+
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="pbswebmon/table.css" media="all"/>
+    <link rel="stylesheet" type="text/css" href="pbswebmon/local.css" media="all"/>
+  </head>
+
+  <body onload='synchronise_options()'>
+    <div id='header' class='header'>
+      <div class='summary_box'>
+	<table class='summary_box_table'>
+	  <tr class='summary_box_entry'>
+	    <td class='medium'>
+	      <b> %(CLUSTER_NAME)s status</b><br/>%(DateTime)s<br/>Refreshes every %(REFRESH_TIME)s seconds. !!!NOT!!!
+
+	      <form class="showdetails">
+		<div>
+		  <input type="checkbox" name="show_node_grid" checked="checked"  onclick="show_hide_data('node_grid',this.checked=\"checked\",false)"/>Show node list
+		  <br/>
+		  <input type="checkbox" name="show_details" checked="checked"  onclick="show_hide_data('jobdata',this.checked=\"checked\",true)"/>Show all job details
+		  <br/>
+		  <input type="checkbox" name="show_joblist" checked="checked"  onclick="show_hide_data('joblist',this.checked=\"checked\",false)"/>Show job list
+		  <br/>
+		  <input type="checkbox" name="fixed_header" checked="checked"  onclick="on_top('summary_box',this.checked=\"checked\")"/>Header always on top
+		  <br/>
+		  <input type="checkbox" name="refresh" onclick="set_refresh(this.checked=\"checked\")"/>Auto-refresh
+		</div>
+	      </form>
+	    </td>
+	    <td>
+	      %(UserSummary)s
+	    </td>
+	    <td>
+	      %(QueueSummary)s
+	    </td>
+	    <td>
+	      %(NodeSummary)s
+	    </td>
+	  </tr>
+	</table>
+      </div><!-- summary_box -->
+    </div><!-- header -->
+    <br clear='all'/>
+
+    <table class="node_grid">
+      <tr>
+	%(NodeTable)s
+      </tr>
+    </table>
+
+    <!-- Job List -->
+    <table class='example table-sorted-asc table-autosort:0 joblist'>
+      <caption>Jobs</caption>
+      <thead>
+	<tr>
+	  <th class='table-sortable:default'>Job ID</th>
+	  <th class='table-sortable:default'>Username</th>
+	  <th class='table-sortable:default'>Queue</th>
+	  <th class='table-sortable:default'>Jobname</th>
+	  <th class='table-sortable:numeric'>Nodes</th>
+	  <th class='table-sortable:numeric'>Cores</th>
+	  <th class='table-sortable:default'>State</th>
+	  <th class='table-sortable:numeric'>Elapsed Time</th>
+	</tr>
+      </thead>
+      <tbody>
+	%(JobTable)s
+      </tbody>
+    </table>
+  </body>
+</html>

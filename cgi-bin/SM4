@@ -1,0 +1,11 @@
+
+#/usr/local/cluster/software/python/Python-2.7.1/bin/twistd web --port=8080 --path=.
+#/panfs/home/software/builds/njc2/python/core/Python-2.7.3/Installation/bin/twistd web --port=8080 --path=.
+#/ycga-ba/home/software/builds/njc2/python/core/Python-2.7.3/Installation/bin/twistd -n web --port=8080 --path=.
+
+module load Langs/Python/2.7.11_libs
+
+export PYTHONPATH=.
+
+twistd web --port=8083 --path=.
+
