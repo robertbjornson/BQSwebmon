@@ -60,6 +60,15 @@ def parseNodeList(nls):
     else:
         yield r
 
+# process a string like this:
+# u'tres_alloc_str': u'cpu=1,mem=4000M,node=1'
+def parse_tres(s):
+    print "in parse_tres", s
+    d={}
+    for e in s.split(','):
+        k, v=e.split('=')
+        d[k]=v
+    return d
 
 #print list(pnl("c13n09,c14n[01-12],c16n[01,07],c17n[01-02,05],c18n[01-12],c19n[01-12],c20n[01-12],c21n[01-07,09-10],c22n[01-12],c23n[01-12],bigmem[01-03],gpu01,gpu[03-06]"))        
 
@@ -84,6 +93,8 @@ def getInfo():
         N['ncpus']=sl_nd['cpus']
         # (float) node RAM in GB
         N['physmem']=sl_nd['real_memory']/1024.0 
+        # (float) total RAM allocated by jobs in GB
+        N['physmem']=sl_nd['alloc_mem']/1024.0 
         # (int) users on node 
         N['nusers']=0  #FIX
         # (float) node load average
@@ -145,7 +156,14 @@ def getInfo():
         # (int) sec of wall time used by this job
         J['walltime']=sl_jd['run_time']
         # (float) GB of memory used by this job
-        J['mem']='NA' #FIX
+        #J['mem']=parse_tres(sl_jd.get('tres_alloc_str', {})).get('mem', "?")
+
+        tres=sl_jd['tres_alloc_str']
+	# mem is total memory for this job, across all nodes
+        if tres:
+            J['mem']=parse_tres(tres)['mem']
+        else:
+            J['mem']=parse_tres(sl_jd['tres_req_str'])['mem']
 
         # add this jobs's states to the queue count
         (Qs[J['queue']]['statecount'])[J['state']]+=1
