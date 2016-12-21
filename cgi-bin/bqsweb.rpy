@@ -432,6 +432,7 @@ for nn in sorted(info['nodes'].keys()):
     loadave=nd['loadave']
     nusers = nd['nusers']
     physmem = nd['physmem']
+    allocmem = nd.get('allocmem', 0)
 
     # FIX
     # define cell bg color based on state
@@ -450,7 +451,7 @@ for nn in sorted(info['nodes'].keys()):
     print '''<form class='%s'><b>%s</b> %s
 <INPUT class='job_indiv' TYPE="CHECKBOX" NAME="%s" checked="CHECKED" onClick="show_hide_data_id('%s',\
 this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, queue, nn, nn)
-    print "<br>%d jobs, %d cores, %s users, %.2f GB, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,physmem,loadave)
+    print "<br>%d jobs, %d cores, %s users, Mem %.2f/%.2fG, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,allocmem, physmem, loadave)
     print "<span class='jobdata' id='"+nn+"' style='display:block'>"
     
     for jid in sorted(myjobs.keys()):
