@@ -463,7 +463,7 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
         cput = myjob['cputime']
         print >> sys.stderr, 'myjob', myjob
         numCpusOnNode = myjob['hosts'][nn]
-        mem = nd['physmem']
+        mem = myjob.get('mem')
         # FIX
         memreq = mem
         walltime = myjob['walltime']
@@ -495,10 +495,11 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 else:
                     print "<font color='black'>",
 
-        print "%7.2f%%</font> " % (effic*100.0),
+        #print "%7.2f%%</font> " % (effic*100.0),
+        print " </font> ",
         print "</span>",
 
-
+        '''
         if mem > memreq and memreq > 0.0:
             print "<font color='red'>",
         else:
@@ -506,9 +507,9 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 print "<font color='gray'>",
             else:
                 print "<font color='black'>",
+        '''
 
-
-        print "%.2f/%.2f GB</font>" %(mem,memreq)
+        print "%s</font>" %(mem)
     print "</span>"
     print "</td>"
     if (count and ((count%GRID_COLS))==GRID_COLS-1):
