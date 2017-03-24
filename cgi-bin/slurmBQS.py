@@ -21,13 +21,13 @@ def parseNodeList(nls):
     rngs=[]
     while idx < len(nls):
         c = nls[idx]
-        if c == ',': # command concludes one entry, yield all the values                                                                                                              
+        if c == ',': # char concludes one entry, yield all the values                                                                                                              
             t=''.join(tmpl)
             if rngs:
                 for rng in itertools.product(*rngs):
                     yield t % rng
             else:
-                yield r
+                yield t
             tmpl=[]
             rngs=[]
             idx+=1
@@ -63,7 +63,6 @@ def parseNodeList(nls):
 # process a string like this:
 # u'tres_alloc_str': u'cpu=1,mem=4000M,node=1'
 def parse_tres(s):
-    print "in parse_tres", s
     d={}
     for e in s.split(','):
         k, v=e.split('=')
@@ -122,6 +121,7 @@ def getInfo():
         # add this queue to the nodes assigned to it
         # (see above)
         for nn in Q['nodes']:
+            if nn not in Ns: continue # temporary fix for situation where Q lists nodes not defined in nodes.
             Ns[nn]['queues'].append(str(sl_qn))
 
         # How many jobs in this queue are in each state:
@@ -145,7 +145,8 @@ def getInfo():
         # (string) job queue
         J['queue']=sl_jd['partition']
         # (string) job name
-        J['name']=sl_jd['name']
+        # Total hack to avoid problems when name is unicode ??
+        J['name']=sl_jd['name'].encode('punycode')
         # (dict) mapping node name to number of cores used for all nodes participating in this job
         #{'c13n08': 20}
         J['hosts']=sl_jd['cpus_allocated']
@@ -173,7 +174,6 @@ def getInfo():
             for nn in J['hosts']:
                 Ns[nn]['jobs'][sl_jid]=J['cores']
 
-    print "SLURMJOBS", sl_jobs
     return info
 
 info = getInfo()

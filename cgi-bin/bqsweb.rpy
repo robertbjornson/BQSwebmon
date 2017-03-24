@@ -42,7 +42,7 @@ JOB_EFFIC={}
 # PENDING,RUNNING,SUSPENDED,COMPLETED,CANCELLED,FAILED,TIMEOUT,NODE_FAIL,PREEMPTED,BOOT_FAIL,DEADLINE,COMPLETING,CONFIGURING,RESIZING,SPECIAL_EXIT
 JOB_STATES=['R','Q','F', 'E','C','H','W','T']
 # NODE_STATES=['down','free','job-exclusive','offline','state-unknown']
-NODE_STATES=['DOWN', 'IDLE', 'MIXED', 'ALLOCATED']
+NODE_STATES=['DOWN', 'IDLE', 'MIXED', 'ALLOCATED', 'MAINT']
 REFRESH_TIME = "30"
 USER_EFFIC={}
 
@@ -117,13 +117,10 @@ def fill_user_list (jobs):
         cores = atts.get('cores')
         # RDB this was treating -- as a node name, and counting it in nodes and cores
         if (job_state =="R"):
-            print sys.stderr, 'atts', atts['hosts']
             user['Nodes'].update(atts['hosts'].keys())
             user['Cores'] = user.get('Cores', 0) + atts.get('cores')
         user[job_state] = user.get(job_state, 0) + 1
 
-    print sys.stderr, "user_list", users
-    print sys.stderr, "USER_EFFIC", USER_EFFIC
     return users
            
 def print_user_summary(users):
@@ -177,7 +174,6 @@ def print_user_summary(users):
         print "<tr><td onMouseOver='highlight(\"%s\")' onMouseOut='dehighlight(\"%s\")'title='%s'>%s</td><td>%s</td>" % (user,user,get_dn(user),user,group)
         for state in ['Jobs', 'Nodes', 'Cores'] + JOB_STATES:
             if state == 'Nodes':
-                print >> sys.stderr, "GAH", atts
                 c = len(atts.get(state, []))
             else:
                 c = atts.get(state, 0)
@@ -274,13 +270,11 @@ def print_queue_summary(info):
         for n in atts['nodes']:
             try:
                 nd = info["nodes"][n]
-                print >> sys.stderr, "nd", nd
             except:
                 nond.append(n)
                 continue
             cores = int(nd['ncpus'])
             d = c2avail.setdefault(cores, {})
-            print >> sys.stderr, n, 'state', nd['state']
             if ('DOWN' in nd['state']) or ('DOWN*' in nd['state']): #FIX
                 d['Down'] = d.get('Down', 0) + 1
             elif 'offline' in nd['state']:
@@ -289,7 +283,6 @@ def print_queue_summary(info):
                 #avail = cores - len(nd.get('jobs', [])) 
                 avail = cores-nd['activecores']
                 d[avail] = d.get(avail, 0) + 1
-        print >> sys.stderr, 'c2avail', c2avail
         for c in sorted(c2avail.keys()):
             d = c2avail[c]
             extras = []
@@ -312,7 +305,7 @@ def print_queue_summary(info):
     print "</tr></tfoot>"
     print "</table>"
     if nond:
-        print 'No node data for: '+','.join(nond)
+        print 'No node data for: '+','.join(nond[:4])+"..." # FIX
     buf = sys.stdout.getvalue()
     sys.stdout.close()
     sys.stdout = sysso
@@ -403,8 +396,6 @@ except Exception, e:
 info = BQS.getInfo()
 
 users=fill_user_list(info['jobs'])
-print sys.stderr, "user_list", users
-print sys.stderr, "HERE"
 
 DateTime = strftime("%Y-%m-%d %H:%M:%S")
 
@@ -426,7 +417,6 @@ count=0
 for nn in sorted(info['nodes'].keys()):
     nd=info['nodes'][nn]
     node_state = nd['state'][0]
-    print >> sys.stderr, 'node_state', nn, node_state
     myjobs = nd['jobs']
 
     loadave=nd['loadave']
@@ -454,14 +444,11 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
     print "<span class='jobdata' id='"+nn+"' style='display:block'>"
     
     for jid in sorted(myjobs.keys()):
-        print >> sys.stderr, "myjobs", myjobs
-        print >> sys.stderr, "jobs", info["jobs"]
         myjob=info["jobs"][jid]
 
         owner=myjob['owner']
 
         cput = myjob['cputime']
-        print >> sys.stderr, 'myjob', myjob
         numCpusOnNode = myjob['hosts'][nn]
         mem = nd['physmem']
         # FIX
