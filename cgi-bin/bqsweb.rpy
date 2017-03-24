@@ -422,6 +422,7 @@ for nn in sorted(info['nodes'].keys()):
     loadave=nd['loadave']
     nusers = nd['nusers']
     physmem = nd['physmem']
+    allocmem = nd.get('allocmem', 0)
 
     # FIX
     # define cell bg color based on state
@@ -440,7 +441,7 @@ for nn in sorted(info['nodes'].keys()):
     print '''<form class='%s'><b>%s</b> %s
 <INPUT class='job_indiv' TYPE="CHECKBOX" NAME="%s" checked="CHECKED" onClick="show_hide_data_id('%s',\
 this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, queue, nn, nn)
-    print "<br>%d jobs, %d cores, %s users, %.2f GB, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,physmem,loadave)
+    print "<br>%d jobs, %d cores, %s users, Mem %.2f/%.2fG, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,allocmem, physmem, loadave)
     print "<span class='jobdata' id='"+nn+"' style='display:block'>"
     
     for jid in sorted(myjobs.keys()):
@@ -450,7 +451,7 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
 
         cput = myjob['cputime']
         numCpusOnNode = myjob['hosts'][nn]
-        mem = nd['physmem']
+        mem = myjob.get('mem')
         # FIX
         memreq = mem
         walltime = myjob['walltime']
@@ -482,10 +483,11 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 else:
                     print "<font color='black'>",
 
-        print "%7.2f%%</font> " % (effic*100.0),
+        #print "%7.2f%%</font> " % (effic*100.0),
+        print " </font> ",
         print "</span>",
 
-
+        '''
         if mem > memreq and memreq > 0.0:
             print "<font color='red'>",
         else:
@@ -493,9 +495,9 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 print "<font color='gray'>",
             else:
                 print "<font color='black'>",
+        '''
 
-
-        print "%.2f/%.2f GB</font>" %(mem,memreq)
+        print "%s</font>" %(mem)
     print "</span>"
     print "</td>"
     if (count and ((count%GRID_COLS))==GRID_COLS-1):
