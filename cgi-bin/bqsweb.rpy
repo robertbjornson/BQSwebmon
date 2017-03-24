@@ -22,7 +22,7 @@
 ## Config section
 CLUSTER_NAME='Farnam'
 
-import slurmBQS as BQS
+import slurmBQS2 as BQS
 ## end of config section
 
 from getopt import getopt
@@ -38,9 +38,12 @@ import cStringIO
 JOB_EFFIC={}
 #JOB_STATES=['R','Q','E','C','H','W','T']
 
-# slurm states
+# slurm job states
 # PENDING,RUNNING,SUSPENDED,COMPLETED,CANCELLED,FAILED,TIMEOUT,NODE_FAIL,PREEMPTED,BOOT_FAIL,DEADLINE,COMPLETING,CONFIGURING,RESIZING,SPECIAL_EXIT
-JOB_STATES=['R','Q','F', 'E','C','H','W','T']
+# compact versions:
+# PD, R, CA, DF, CG, SD, F, TO, FS, RV SE
+
+JOB_STATES=['R','P','C','F', 'H']
 # NODE_STATES=['down','free','job-exclusive','offline','state-unknown']
 NODE_STATES=['DOWN', 'IDLE', 'MIXED', 'ALLOCATED', 'MAINT']
 REFRESH_TIME = "30"
@@ -120,6 +123,7 @@ def fill_user_list (jobs):
             user['Nodes'].update(atts['hosts'].keys())
             user['Cores'] = user.get('Cores', 0) + atts.get('cores')
         user[job_state] = user.get(job_state, 0) + 1
+        user['Mem'] = user.get('Mem',0)+atts['mem']/1024.0
 
     return users
            
@@ -134,7 +138,7 @@ def print_user_summary(users):
     print "<th class='table-filterable table-sortable:default' align='left'>User</th><th class='table-filterable table-sortable:default' align='left'>Group</th>"
     totals={}
 
-    for state in ['Jobs', 'Nodes', 'Cores'] + JOB_STATES:
+    for state in ['Jobs', 'Nodes', 'Cores', 'Mem'] + JOB_STATES:
         print "<th class='table-filterable table-sorted-desc table-sortable:numeric'>%s</th>" % state
         totals[state]=0
     print "<th class='table-sortable:numeric'>Efficiency</th>"
@@ -172,7 +176,7 @@ def print_user_summary(users):
         except:
             group = '???'
         print "<tr><td onMouseOver='highlight(\"%s\")' onMouseOut='dehighlight(\"%s\")'title='%s'>%s</td><td>%s</td>" % (user,user,get_dn(user),user,group)
-        for state in ['Jobs', 'Nodes', 'Cores'] + JOB_STATES:
+        for state in ['Jobs', 'Nodes', 'Cores', 'Mem'] + JOB_STATES:
             if state == 'Nodes':
                 c = len(atts.get(state, []))
             else:
@@ -422,7 +426,6 @@ for nn in sorted(info['nodes'].keys()):
     loadave=nd['loadave']
     nusers = nd['nusers']
     physmem = nd['physmem']
-    allocmem = nd.get('allocmem', 0)
 
     # FIX
     # define cell bg color based on state
@@ -441,7 +444,7 @@ for nn in sorted(info['nodes'].keys()):
     print '''<form class='%s'><b>%s</b> %s
 <INPUT class='job_indiv' TYPE="CHECKBOX" NAME="%s" checked="CHECKED" onClick="show_hide_data_id('%s',\
 this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, queue, nn, nn)
-    print "<br>%d jobs, %d cores, %s users, Mem %.2f/%.2fG, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,allocmem, physmem, loadave)
+    print "<br>%d jobs, %d cores, %s users, %.2f GB, %s load</span></form>" % (len(myjobs), nd['activecores'],nusers,physmem,loadave)
     print "<span class='jobdata' id='"+nn+"' style='display:block'>"
     
     for jid in sorted(myjobs.keys()):
@@ -451,9 +454,7 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
 
         cput = myjob['cputime']
         numCpusOnNode = myjob['hosts'][nn]
-        mem = myjob.get('mem')
-        # FIX
-        memreq = mem
+        memreq = mem = nd['jobs'][jid]["mem"]
         walltime = myjob['walltime']
 
         myqueue = myjob['queue']
@@ -483,11 +484,10 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 else:
                     print "<font color='black'>",
 
-        #print "%7.2f%%</font> " % (effic*100.0),
-        print " </font> ",
+        print "%7.2f%%</font> " % (effic*100.0),
         print "</span>",
 
-        '''
+
         if mem > memreq and memreq > 0.0:
             print "<font color='red'>",
         else:
@@ -495,9 +495,9 @@ this.checked);" /><span style="font-size:10pt">Show jobs''' % (node_state, nn, q
                 print "<font color='gray'>",
             else:
                 print "<font color='black'>",
-        '''
 
-        print "%s</font>" %(mem)
+
+        print "%.2f GB</font>" %(mem,)
     print "</span>"
     print "</td>"
     if (count and ((count%GRID_COLS))==GRID_COLS-1):

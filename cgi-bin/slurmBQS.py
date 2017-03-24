@@ -69,6 +69,16 @@ def parse_tres(s):
         d[k]=v
     return d
 
+def mem2GB(s):
+    if s[-1]=='K':
+        return float(s[:-1])/(1024.0*1024)
+    elif s[-1]=='M':
+        return float(s[:-1])/1024.0
+    elif s[-1]=='G':
+        return float(s[:-1])
+    else:
+        return float(s)
+
 #print list(pnl("c13n09,c14n[01-12],c16n[01,07],c17n[01-02,05],c18n[01-12],c19n[01-12],c20n[01-12],c21n[01-07,09-10],c22n[01-12],c23n[01-12],bigmem[01-03],gpu01,gpu[03-06]"))        
 
 def getInfo():
@@ -103,8 +113,8 @@ def getInfo():
         if tmp[-1]=='*': 
             tmp=tmp[:-1] # * means not responding; ignore for now
         N['state']=[tmp,]
-        # dict mapping jobid to number of cores used on this node
-        # 'jobs': {'145': 20},
+        # dict holding node-specific info for each job (cores, memory used by this job on this node)
+        # 'jobs': {'145': {"cores": 20, "mem": 6000}}
         N['jobs']={}
         # (int) total number of active cores on this node across all jobs
         N['activecores']=sl_nd['alloc_cpus']
@@ -121,7 +131,7 @@ def getInfo():
         # add this queue to the nodes assigned to it
         # (see above)
         for nn in Q['nodes']:
-            if nn not in Ns: continue # temporary fix for situation where Q lists nodes not defined in nodes.
+            if nn not in Ns: continue # temporary fix for situation where Q lists nodes node defined in nodes.
             Ns[nn]['queues'].append(str(sl_qn))
 
         # How many jobs in this queue are in each state:
@@ -145,8 +155,8 @@ def getInfo():
         # (string) job queue
         J['queue']=sl_jd['partition']
         # (string) job name
-        # Total hack to avoid problems when name is unicode ??
-        J['name']=sl_jd['name'].encode('punycode')
+	# Total hack to avoid problems when name is unicode ??
+	J['name']=sl_jd['name'].encode('punycode')
         # (dict) mapping node name to number of cores used for all nodes participating in this job
         #{'c13n08': 20}
         J['hosts']=sl_jd['cpus_allocated']
@@ -162,9 +172,9 @@ def getInfo():
         tres=sl_jd['tres_alloc_str']
 	# mem is total memory for this job, across all nodes
         if tres:
-            J['mem']=parse_tres(tres)['mem']
+            J['mem']=mem2GB(parse_tres(tres)['mem'])
         else:
-            J['mem']=parse_tres(sl_jd['tres_req_str'])['mem']
+            J['mem']=mem2GB(parse_tres(sl_jd['tres_req_str'])['mem'])
 
         # add this jobs's states to the queue count
         (Qs[J['queue']]['statecount'])[J['state']]+=1
@@ -172,7 +182,17 @@ def getInfo():
         # add this job to the list of jobs on all of its nodes
         if J['state']=='R':
             for nn in J['hosts']:
-                Ns[nn]['jobs'][sl_jid]=J['cores']
+                if not sl_jid in  Ns[nn]['jobs']:
+                     Ns[nn]['jobs'][sl_jid]={}
+                Ns[nn]['jobs'][sl_jid]["cores"]=J['cores']
+                # here we calculate the memory footprint of the cores on this mode only
+                # remember, J['mem'] is the total mem for the job across all nodes
+                if sl_jd['mem_per_node']:
+                    Ns[nn]['jobs'][sl_jid]["mem"]=J['mem']/sl_jd['num_nodes']
+                elif sl_jd['mem_per_cpu']:
+                    Ns[nn]['jobs'][sl_jid]["mem"]=J['mem']/sl_jd['num_cpus']*J['hosts'][nn]
+                else:
+                    error("huh")
 
     return info
 
