@@ -20,9 +20,9 @@
 #
 
 ## Config section
-CLUSTER_NAME='Farnam'
+CLUSTER_NAME='Ruddle'
 
-import slurmBQS2 as BQS
+import slurmBQS as BQS
 ## end of config section
 
 from getopt import getopt
