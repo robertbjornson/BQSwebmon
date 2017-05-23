@@ -22,7 +22,7 @@
 ## Config section
 CLUSTER_NAME='Farnam'
 
-import slurmBQS2 as BQS
+import slurmBQS as BQS
 ## end of config section
 
 from getopt import getopt
@@ -124,7 +124,6 @@ def fill_user_list (jobs):
             user['Cores'] = user.get('Cores', 0) + atts.get('cores')
         user[job_state] = user.get(job_state, 0) + 1
         user['Mem'] = user.get('Mem',0)+atts['mem']/1024.0
-
     return users
            
 def print_user_summary(users):

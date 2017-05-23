@@ -172,9 +172,9 @@ def getInfo():
         tres=sl_jd['tres_alloc_str']
 	# mem is total memory for this job, across all nodes
         if tres:
-            J['mem']=mem2GB(parse_tres(tres)['mem'])
+            J['mem']=mem2GB(parse_tres(tres).get('mem', 0))
         else:
-            J['mem']=mem2GB(parse_tres(sl_jd['tres_req_str'])['mem'])
+            J['mem']=mem2GB(parse_tres(sl_jd['tres_req_str']).get('mem', '0'))
 
         # add this jobs's states to the queue count
         (Qs[J['queue']]['statecount'])[J['state']]+=1
