@@ -20,7 +20,7 @@
 #
 
 ## Config section
-CLUSTER_NAME='Farnam'
+CLUSTER_NAME='Ruddle'
 
 import slurmBQS as BQS
 ## end of config section
