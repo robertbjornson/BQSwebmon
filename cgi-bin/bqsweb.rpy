@@ -20,7 +20,7 @@
 #
 
 ## Config section
-CLUSTER_NAME='Ruddle'
+CLUSTER_NAME='Farnam'
 
 import slurmBQS as BQS
 ## end of config section
@@ -45,7 +45,7 @@ JOB_EFFIC={}
 
 JOB_STATES=['R','P','C','F', 'H']
 # NODE_STATES=['down','free','job-exclusive','offline','state-unknown']
-NODE_STATES=['DOWN', 'IDLE', 'MIXED', 'ALLOCATED', 'MAINT']
+NODE_STATES=['DOWN', 'IDLE', 'MIXED', 'ALLOCATED', 'MAINT', 'UNKNOWN']
 REFRESH_TIME = "30"
 USER_EFFIC={}
 
