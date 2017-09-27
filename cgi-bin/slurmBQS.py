@@ -153,7 +153,10 @@ def getInfo():
         # (string) netid of job owner
         J['owner']=pwd.getpwuid(sl_jd['user_id']).pw_name
         # (string) job queue
+        # hack... partition can (rarely) be comma separated list.  I can't see a way to tell which partition was chosen
         J['queue']=sl_jd['partition']
+        if J['queue'].count(','):
+	    J['queue']=J['queue'].split(',')[0]
         # (string) job name
 	# Total hack to avoid problems when name is unicode ??
 	J['name']=sl_jd['name'].encode('punycode')
@@ -196,17 +199,18 @@ def getInfo():
 
     return info
 
-info = getInfo()
+if __name__=="__main__":
+    info = getInfo()
 
-print "JOBS"
-for jid, jd in info['jobs'].iteritems():
-    print jid, jd
+    print "JOBS"
+    for jid, jd in info['jobs'].iteritems():
+        print jid, jd
 
-print "NODES"
-for nn, nd in info['nodes'].iteritems():
-    print nn, nd
+    print "NODES"
+    for nn, nd in info['nodes'].iteritems():
+        print nn, nd
 
-print "QUEUES"
-for qn, qd in info['queues'].iteritems():
-    print qn, qd
+    print "QUEUES"
+    for qn, qd in info['queues'].iteritems():
+        print qn, qd
 
