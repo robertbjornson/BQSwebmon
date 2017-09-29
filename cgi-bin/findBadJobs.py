@@ -22,4 +22,4 @@ def getSuspects(limit):
 if __name__=='__main__':
     s=getSuspects(0.3)
     for c, r, jid, j in s:
-        print c, r, jid, j['owner'], j['name'], j['hosts']
+        print "%d\t%f\t%s\t%20s\t%20s\t%s" %(c, r, jid, j['owner'], j['name'], j['hosts'])
