@@ -19,7 +19,20 @@ def getSuspects(limit):
                 suspects.append((j['cores'],r, jid, j))
     return sorted(suspects, reverse=True)
 
+def findUsers(s):
+    users={}
+    for c, r, jid, j in s:
+        users[j['owner']]=users.setdefault(j['owner'], 0)+c
+    l=sorted([(c, u) for u, c in users.items()], reverse=True)
+    return l
+
 if __name__=='__main__':
     s=getSuspects(0.3)
     for c, r, jid, j in s:
         print "%d\t%f\t%s\t%20s\t%20s\t%s" %(c, r, jid, j['owner'], j['name'], j['hosts'])
+    for c, u in findUsers(s):
+        print "%d\t%s" % (c, u)
+#        print "%20s%d" % (u, c)
+
+
+    
