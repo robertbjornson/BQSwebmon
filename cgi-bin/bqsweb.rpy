@@ -189,8 +189,8 @@ def print_user_summary(users):
 
     totals['Nodes'] = len(nodes) # some user may share nodes, so doing this avoids double counting.
     print "<tfoot><tr><td><b>Total</b></td><td/>"
-    for state in ['Jobs', 'Nodes', 'Cores'] + JOB_STATES:
-        print "<td>%s</td>" % totals[state]
+    for state in ['Jobs', 'Nodes', 'Cores', 'Mem'] + JOB_STATES:
+        print "<td>%d</td>" % totals[state]
     print "</tr>"
     print '''</tfoot>'''
     print "</table>"
