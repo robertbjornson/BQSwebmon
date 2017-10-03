@@ -19,11 +19,7 @@
 # Heavily modified for use at Yale by NJC.
 #
 
-## Config section
-CLUSTER_NAME='Farnam'
-
 import slurmBQS as BQS
-## end of config section
 
 from getopt import getopt
 import grp, pwd, sys
@@ -34,6 +30,12 @@ import os,urllib,pdb
 import cgitb; cgitb.enable()
 
 import cStringIO
+import configparser
+
+## Config section
+config=configparser.ConfigParser()
+config.read('config.ini')
+CLUSTER_NAME=str(config.get("DEFAULT", "cluster"))
 
 JOB_EFFIC={}
 #JOB_STATES=['R','Q','E','C','H','W','T']
