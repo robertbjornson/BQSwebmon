@@ -240,6 +240,15 @@ def print_node_summary(nodes):
     sys.stdout = sysso
     return buf
 
+def coreSummary(c2avail):
+    total=0; avail=0
+    for nodetyp, cnts  in c2avail.items():
+        for availtyp, cnt in cnts.items():
+            total+=nodetyp*cnt
+            if isinstance(availtyp, int):
+                avail+=availtyp*cnt
+    return (avail, total)
+
 
 def print_queue_summary(info):
     sysso = sys.stdout
@@ -249,7 +258,7 @@ def print_queue_summary(info):
     print "<caption>Queues</caption>"
 
     print "<thead><tr>"
-    headers=['R','Q','H', 'Avail']
+    headers=['R','Q','H', 'Total cpus', 'Avail cpus', 'Avail']
     print "<th class='table-filterable table-sortable:default' align='left'>Name</th>"
     totals={}
     for h in headers:
@@ -263,12 +272,12 @@ def print_queue_summary(info):
         print "<tr>",
         print "<td>",queue, "</td>",
 
-        statedict=atts['statecount']
-
-        for s in headers:
-            if s == 'Avail': continue # hack
-            print "<td align='right'>",statedict[s],"</td>",
-            totals[s]=totals[s]+int(statedict[s])
+#        statedict=atts['statecount']
+#        print >> sys.stderr, "statedict", statedict
+#        for s in headers:
+#           if s == 'Avail': continue # hack
+#           print "<td align='right'>",statedict[s],"</td>",
+#           totals[s]=totals[s]+int(statedict[s])
 
         c2avail, summary = {}, []
 
@@ -297,7 +306,25 @@ def print_queue_summary(info):
             if 'offline' in d:
                 cc = d.pop('offline')
                 extras.append('%d/F'%cc)
+
             summary.append('%dC&nbsp;'%c + ','.join(['%d/%d'%(d[a], a) for a in sorted(d.keys())]+extras))
+
+        statedict=atts['statecount']
+        a, t = coreSummary(c2avail)
+        statedict['Total cpus']=t
+        statedict['Avail cpus']=a
+        print >> sys.stderr, "statedict", statedict
+        for s in headers:
+           if s == 'Avail': continue # hack
+           print "<td align='right'>",statedict[s],"</td>",
+           totals[s]=totals[s]+int(statedict[s])
+            
+            #totals['Avail cpus']+=a
+            #totals['Total cpus']+=t
+            #print >> sys.stderr, c2avail
+            #print >> sys.stderr, coreSummary(c2avail)
+
+
         print '<td>%s</td>'%'<br>'.join(summary)
 
         print "</tr>"
